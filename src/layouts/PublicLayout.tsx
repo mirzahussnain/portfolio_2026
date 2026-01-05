@@ -3,15 +3,47 @@ import Navbar from "../components/layout/Navbar";
 import ScrollToHash from "../components/ui/ScrollToHash";
 import { useEffect, useState } from "react";
 import Footer from "../components/layout/Footer";
+import { useDispatch } from "react-redux";
+import { fetchAdminDocument, fetchCollection } from "../firebase/services";
+import { About, Education, Experience, Project, Skill } from "../types";
+import { setAbout } from "../redux/features/AboutSlice";
+import { setSkills } from "../redux/features/SkillSlice";
+import { setExperiences } from "../redux/features/ExperienceSlice";
+import { setEducation } from "../redux/features/EducationSlice";
+import { setProjects } from "../redux/features/ProjectSlice";
 
 const PublicLayout = () => {
   const [loading, setLoading] = useState(true);
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1200);
-    return () => clearTimeout(timer);
-  }, []);
+  const dispatch=useDispatch();
+  useEffect(()=>{
+    const fetchPortfolioData=async()=>{
+      setLoading(true)
+      //Fetch about data
+      try{
+        const aboutDetails:About=await fetchAdminDocument();
+        const skillsDetails:Skill[] | Project[] | Experience[] | Education[]=await fetchCollection("skills");
+        const projectsDetails:Skill[] | Project[] | Experience[] | Education[]=await fetchCollection("projects");
+        const experienceDetails:Skill[] | Project[] | Experience[] | Education[]=await fetchCollection("experiences");
+        const educationDetails:Skill[] | Project[] | Experience[] | Education[]=await fetchCollection("qualifications");
+        if(aboutDetails && skillsDetails && projectsDetails && experienceDetails && educationDetails ){
+        const aboutData:About=aboutDetails;
+       
+         dispatch(setAbout(aboutData));
+         dispatch(setSkills(skillsDetails as Skill[]))
+         dispatch(setExperiences(experienceDetails as Experience[]))
+         dispatch(setEducation(educationDetails as Education[]))
+         dispatch(setProjects(projectsDetails as Project[]))
+        }
+      }catch(error){
+        alert(error.message);
+      }
+      finally{
+        setLoading(false);
+      }
+    }
+    fetchPortfolioData();
+  },[])
+
 
   if (loading) {
     return (

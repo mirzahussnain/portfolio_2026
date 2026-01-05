@@ -1,17 +1,22 @@
-import React, { useState, useEffect } from "react";
-import { ViewState } from "./types";
-import Navbar from "./components/layout/Navbar";
-import Hero from "./components/sections/Hero";
-import Experience from "./components/sections/Experience";
-import Skills from "./components/sections/Skills";
-import Projects from "./components/sections/Projects";
-import Contact from "./components/sections/Contact";
-import AdminDashboard from "./pages/AdminDashboard";
-import SignIn from "./pages/SignIn";
+import React, { useState, useEffect, useRef } from "react";
+
 import Portfolio from "./pages/Portfolio";
+import { incrementViewCount } from "./firebase/services";
 
 const App: React.FC = () => {
+  const initialized = useRef(false);
 
+  useEffect(() => {
+    // Prevent double-counting in React Strict Mode (Dev)
+    if (!initialized.current) {
+      initialized.current = true;
+
+      // Optional: Don't count  own localhost visits
+      if (window.location.hostname !== "localhost") {
+         incrementViewCount();
+      }
+    }
+  }, []);
   return <Portfolio />;
 };
 

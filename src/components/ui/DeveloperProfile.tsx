@@ -1,8 +1,18 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import TechBackground from "./TechBackground"; // Make sure this path is correct
+import { About, Skill } from "@/src/types";
 
-const DeveloperProfile = () => {
+const DeveloperProfile = ({
+  about,
+  skills,
+}: {
+  about: About;
+  skills: Skill[];
+}) => {
+  const randomSkills = useMemo(() => {
+    return [...skills].sort(() => 0.5 - Math.random()).slice(0, 5);
+  }, [skills]);
   return (
     // 1. OUTER CONTAINER: Added 'p-12 md:p-24' to create space for the floating background
     <div className="relative flex items-center justify-center p-6 md:p-24 overflow-hidden rounded-2xl">
@@ -39,12 +49,12 @@ const DeveloperProfile = () => {
           >
             <div className="px-6 py-2 overflow-x-auto custom-scrollbar">
               <div className="font-mono text-sm md:text-[15px] leading-relaxed whitespace-pre">
-        
-
                 {/* Object Implementation */}
                 <div>
                   <span className="text-pink-400">const</span>{" "}
-                  <span className="text-blue-300">hussnain</span>
+                  <span className="text-blue-300">
+                    {about.name.split(" ")[0].toLocaleLowerCase()}
+                  </span>
                   <span className="text-slate-400">:</span>{" "}
                   <span className="text-yellow-300">Developer</span>{" "}
                   <span className="text-pink-400">=</span>{" "}
@@ -54,14 +64,16 @@ const DeveloperProfile = () => {
                 <div>
                   <div>
                     <span className="text-blue-300"> name</span>:
-                    <span className="text-green-400"> 'Hussnain Ali'</span>,
+                    <span className="text-green-400"> {about.name}</span>,
                   </div>
                   <div className="flex flex-wrap">
                     <span className="text-blue-300"> skills</span>: [
-                    <span className="text-green-400">'React'</span>,{" "}
-                    <span className="text-green-400">'Next.js'</span>,{" "}
-                    <span className="text-green-400">'Node'</span>,{" "}
-                    <span className="text-green-400">'AI'</span>
+                    {randomSkills.map((skill, index) => (
+                      <span className="text-green-400" key={index}>
+                        {skill.name}
+                        {index < randomSkills.length - 1 ? ", " : ""}
+                      </span>
+                    ))}
                     ],
                   </div>
                   <div>

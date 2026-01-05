@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { LazyImage } from "../ui/LazyImage";
+// import { LazyImage } from "../ui/LazyImage";
 import { AnimatePresence, motion } from "framer-motion";
-import { PROFESSION_TITLES } from "@/src/lib/constants";
 import DeveloperProfile from "../ui/DeveloperProfile";
+import { useSelector } from "react-redux";
+import { RootState } from "@/src/redux/store";
 
 const sentenceVariants = {
   animate: {
@@ -25,11 +26,13 @@ const letterVariants = {
 
 const Hero: React.FC = () => {
   const [index, setIndex] = useState(0);
+  const about=useSelector((state:RootState)=>state.about)
+  const skills=useSelector((state:RootState)=>state.skills)
 
   const handleAnimationComplete = () => {
     // Wait 2 seconds after typing finishes, then switch index to trigger 'exit'
     setTimeout(() => {
-      setIndex((prev) => (prev + 1) % PROFESSION_TITLES.length);
+      setIndex((prev) => (prev + 1) % about.title.length);
     }, 2000);
   };
   return (
@@ -48,9 +51,9 @@ const Hero: React.FC = () => {
               Hello, I'm
             </h2>
             <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-[1.1]">
-              <span className="text-white">Hussnain </span>
+              <span className="text-white">{about.name.split(" ")[0]} </span>
               <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-blue-400">
-                Ali
+                {about.name.split(" ")[1]}
               </span>
             </h1>
           </div>
@@ -74,7 +77,7 @@ const Hero: React.FC = () => {
                   }}
                   className="whitespace-nowrap" // Prevents layout shift
                 >
-                  {PROFESSION_TITLES[index].split("").map((char, i) => (
+                  {about.title[index].split("").map((char, i) => (
                     <motion.span
                       key={`${char}-${i}`}
                       variants={letterVariants}
@@ -125,7 +128,7 @@ const Hero: React.FC = () => {
           </div>
         </div>
 
-        <DeveloperProfile/>
+        <DeveloperProfile about={about} skills={skills} />
 
         
       </div>

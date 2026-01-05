@@ -1,8 +1,52 @@
 
-import React from 'react';
-import { INITIAL_EXPERIENCE } from '../../lib/constants';
+// import { INITIAL_EXPERIENCE } from '@/src/lib/constants';
+import { getYear, stringToDate, toTime } from '@/src/lib/utils';
+import { RootState } from '@/src/redux/store';
+import type { Education, Experience, TimelineItem } from '@/src/types';
+import React, { useEffect, useMemo } from 'react';
+import { useSelector } from 'react-redux';
+import Timeline from '../ui/Timeline';
+
 
 const Experience: React.FC = () => {
+ // ✅ Good: Only re-renders if these specific slices change
+const experiences = useSelector((state: RootState) => state.experiences);
+const educations = useSelector((state: RootState) => state.educations);
+
+ 
+  const timelineData=useMemo(()=>{
+    const workItems:TimelineItem[]=experiences.map((exp:Experience)=>({
+      _id:exp._id,
+      category:'work',
+      title:exp.role,
+      place:exp.company,
+      period:`${getYear(stringToDate(exp.starting_date))} - ${getYear(stringToDate(exp.ending_date))}`,
+      description:exp.responsibilities,
+      tags:exp.skills || [],
+      icon:exp.icon || 'work',
+      sortDate:toTime(stringToDate(exp.ending_date))
+    }))
+
+    const eduItems:TimelineItem[]=educations.map((edu:Education)=>({
+      _id:edu._id,
+      category:'education',
+      title:edu.title,
+      place:edu.institution,
+      period: `${getYear(stringToDate(edu.starting_date))} - ${getYear(stringToDate(edu.ending_date))}`,
+      tags:[
+        edu.grade?`Grade: ${edu.grade}`: null,
+        edu.type?`Qualification Type: ${edu.type.replace('-',' ')}`:null,
+      ].filter(Boolean) as string[],
+      major:edu.major,
+      description:edu.description,
+      icon:'school',
+      sortDate:toTime(stringToDate(edu.ending_date))
+    }))
+   
+    return [...workItems,...eduItems].sort((a,b)=>b.sortDate - a.sortDate);
+  },[experiences,educations])
+ 
+  
   return (
     <section id="experience" className="py-24 px-6 relative bg-background-dark overflow-hidden">
       <div className="max-w-5xl mx-auto">
@@ -24,40 +68,7 @@ const Experience: React.FC = () => {
           </button>
         </div>
 
-        <div className="relative pl-4 md:pl-0">
-          <div className="absolute left-8 md:left-1/2 top-0 bottom-0 w-0.5 bg-white/10 -ml-px hidden md:block"></div>
-          <div className="absolute left-6 top-2 bottom-0 w-0.5 bg-white/10 md:hidden"></div>
-
-          <div className="flex flex-col gap-12">
-            {INITIAL_EXPERIENCE.map((item, index) => (
-              <div key={item.id} className={`relative grid md:grid-cols-2 gap-8 items-center`}>
-                <div className={`${index % 2 === 0 ? 'md:text-right order-2 md:order-1 pl-12 md:pl-0' : 'order-2 pl-12 md:pl-0 md:col-start-2'}`}>
-                  <div className="glass-card p-6 rounded-2xl relative transition-all duration-300 hover:border-primary/40 group">
-                    <div className="flex flex-col gap-4">
-                      <div className={`flex justify-between items-start ${index % 2 === 0 ? 'md:flex-row-reverse' : ''}`}>
-                        <div className={`${index % 2 === 0 ? 'md:text-right' : ''}`}>
-                          <h3 className="text-xl font-bold text-white mb-1">{item.role}</h3>
-                          <p className="text-primary font-medium">{item.company}</p>
-                        </div>
-                        <span className="bg-primary/20 text-primary text-xs font-bold px-2 py-1 rounded h-fit">{item.period}</span>
-                      </div>
-                      <p className="text-slate-400 text-sm leading-relaxed">{item.description}</p>
-                      <div className={`flex flex-wrap gap-2 mt-1 ${index % 2 === 0 ? 'md:justify-end' : ''}`}>
-                        {item.tags.map(tag => (
-                          <span key={tag} className="text-[11px] font-semibold text-slate-300 bg-white/5 border border-white/10 px-2 py-1 rounded">{tag}</span>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute left-6 md:left-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-background-dark border-4 border-white/10 flex items-center justify-center z-20 order-1 shadow-[0_0_15px_rgba(13,185,242,0.5)]">
-                  <span className="material-symbols-outlined text-primary text-sm">{item.icon}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+       <Timeline data={timelineData}/>
       </div>
     </section>
   );

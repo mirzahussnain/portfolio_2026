@@ -3,18 +3,13 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Hero from "./components/sections/Hero";
-import Experience from "./components/sections/Experience";
-import Skills from "./components/sections/Skills";
-import Projects from "./components/sections/Projects";
-import Contact from "./components/sections/Contact";
 import PublicLayout from "./layouts/PublicLayout";
 import AuthLayout from "./layouts/AuthLayout";
 import SignIn from "./pages/SignIn";
 import AdminLayout from "./layouts/AdminLayout";
-import AdminDashboard from "./pages/AdminDashboard";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
