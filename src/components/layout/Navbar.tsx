@@ -5,6 +5,7 @@ import { RootState } from "@/src/redux/store";
 import { logout } from "@/src/redux/features/AuthSlice"; 
 import { MdOutlineMenu, MdDashboard, MdLogout } from "react-icons/md"; 
 import { VscClose } from "react-icons/vsc";
+import { Logo } from "../ui/Logo"; // 👈 IMPORT YOUR LOGO HERE
 
 const Navbar: React.FC = () => {
   const isAuthenticated = useSelector(
@@ -46,15 +47,12 @@ const Navbar: React.FC = () => {
 
   // Handle Logout
   const handleLogout = () => {
-    // 1. Dispatch logout action
     dispatch(logout()); 
-    // 2. Close dropdown
     setProfileOpen(false);
-    // 3. Navigate home or to signin
     navigateTo("/");
   };
 
-  // --- NEW: Click Outside Listener for Profile Dropdown
+  // --- Click Outside Listener for Profile Dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileRef.current && !profileRef.current.contains(event.target as Node)) {
@@ -117,6 +115,8 @@ const Navbar: React.FC = () => {
             >
               {isMenuOpen ? <VscClose size={28} /> : <MdOutlineMenu size={28} />}
             </button>
+            
+            {/* --- UPDATED BRANDING SECTION --- */}
             <div
               className="flex items-center gap-3 cursor-pointer group max-sm:w-100 max-sm:justify-start"
               onClick={() => {
@@ -124,15 +124,19 @@ const Navbar: React.FC = () => {
                 navigateTo("/#home");
               }}
             >
-              <div className="size-8 flex items-center justify-center bg-primary/10 rounded-lg text-primary transition-transform group-hover:scale-110">
-                <span className="material-symbols-outlined text-[24px]">
-                  terminal
-                </span>
+              {/* Logo Container */}
+              <div className="p-2 bg-white/5 rounded-xl border border-white/10 group-hover:border-primary/50 transition-colors">
+             
+                <Logo className="w-8 h-8 text-primary group-hover:rotate-12 transition-transform duration-300" />
               </div>
-              <h2 className="text-white text-xl font-bold tracking-tight">
+
+              {/* Wordmark */}
+              <h2 className="text-white text-xl font-bold tracking-tight group-hover:text-primary transition-colors duration-300">
                 {aboutData?.name || "Hussnain-Ali"}
               </h2>
             </div>
+            {/* -------------------------------- */}
+
           </div>
 
           <nav className="hidden md:flex items-center gap-8">

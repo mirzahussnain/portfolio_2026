@@ -1,8 +1,9 @@
 import { sendMessage } from "@/src/firebase/services";
 import { addNewMessage } from "@/src/redux/features/MessageSlice";
+import { RootState } from "@/src/redux/store";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 
 interface ContactFormData {
@@ -20,10 +21,12 @@ const Contact: React.FC = () => {
     reset,
   } = useForm<ContactFormData>();
   const [loading, setLoading] = useState(false);
+  const aboutData=useSelector((state:RootState)=>state.about)
   const dispatch = useDispatch();
   const onSubmit = async (data: ContactFormData, e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+
 
     const res = await sendMessage(data);
 
@@ -66,7 +69,7 @@ const Contact: React.FC = () => {
                     </span>
                   </div>
                   <span className="text-base font-medium">
-                    hello@devportfolio.com
+                   {  aboutData?.contact_details?.email || 'hussnainalix01@gmail.com'}
                   </span>
                 </div>
                 <div className="flex items-center gap-4 text-slate-300 hover:text-primary transition-colors cursor-pointer group">
@@ -76,7 +79,7 @@ const Contact: React.FC = () => {
                     </span>
                   </div>
                   <span className="text-base font-medium">
-                    San Francisco, CA
+                   {aboutData?.location.city || 'Earth'}, {aboutData?.location?.country || 'Universe'}
                   </span>
                 </div>
               </div>

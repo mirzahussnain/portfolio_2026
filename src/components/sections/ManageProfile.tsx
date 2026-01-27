@@ -21,7 +21,7 @@ const ManageProfile = () => {
   
   // --- PREVIEWS ---
   const [previewUrl, setPreviewUrl] = useState<string>("");
-  const [resumeName, setResumeName] = useState<string>(""); // To show "resume.pdf" selected
+  const [resumeName, setResumeName] = useState<string>(""); 
 
   const [formData, setFormData] = useState<About | null>(null);
   
@@ -32,9 +32,13 @@ const ManageProfile = () => {
   // Sync Redux data with local state
   useEffect(() => {
     if (aboutData) {
-      setFormData(aboutData);
+      // Ensure location object exists even if empty
+      setFormData({
+        ...aboutData,
+        location: aboutData.location || { city: "", country: "" }
+      });
       setPreviewUrl(aboutData.avatar_url || "");
-      setResumeName(""); // Reset resume name on fresh load
+      setResumeName(""); 
     }
   }, [aboutData]);
 
@@ -52,7 +56,7 @@ const ManageProfile = () => {
     const file = e.target.files?.[0];
     if (file) {
       setNewResumeFile(file);
-      setResumeName(file.name); // Show the filename to the user
+      setResumeName(file.name); 
     }
   };
 
@@ -77,7 +81,6 @@ const ManageProfile = () => {
 
       // --- UPLOAD RESUME (if changed) ---
       if (newResumeFile) {
-        // Note: You might want a different folder for resumes
         const resumeUpload = await uploadToCloudinary(
           newResumeFile,
           'portfolio-2026/about/resume',
@@ -113,7 +116,10 @@ const ManageProfile = () => {
 
   const handleCancel = () => {
     if (aboutData) {
-        setFormData(aboutData);
+        setFormData({
+            ...aboutData,
+            location: aboutData.location || { city: "", country: "" }
+        });
         setPreviewUrl(aboutData.avatar_url || "");
         setNewImageFile(null);
         setNewResumeFile(null);
@@ -191,7 +197,7 @@ const ManageProfile = () => {
         {/* --- DETAILS SECTION --- */}
         <div className="space-y-6 bg-white/5 p-6 rounded-2xl border border-white/10">
           
-          {/* Name & Bio (Same as before) */}
+          {/* Name & Bio */}
           <div className="space-y-2">
             <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Display Name</label>
             {isEditing ? (
@@ -221,6 +227,7 @@ const ManageProfile = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-white/10">
+            {/* Contact Email */}
             <div className="space-y-2">
                <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Contact Email</label>
                {isEditing ? (
@@ -244,14 +251,12 @@ const ManageProfile = () => {
                
                {isEditing ? (
                   <div className="flex gap-2">
-                    {/* Read-only input showing URL or new filename */}
                     <input
                         type="text"
                         readOnly
                         value={resumeName || formData?.resume_url || ""}
                         className="flex-1 bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-slate-400 text-sm cursor-not-allowed"
                     />
-                    {/* Upload Button */}
                     <button
                         onClick={() => resumeInputRef.current?.click()}
                         className="bg-white/10 hover:bg-white/20 px-3 py-2 rounded-lg text-white transition-colors"
@@ -279,6 +284,44 @@ const ManageProfile = () => {
                   </a>
                )}
             </div>
+
+            {/*  LOCATION (City & Country) --- */}
+            <div className="space-y-2">
+               <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">City</label>
+               {isEditing ? (
+                  <input
+                    type="text"
+                    placeholder="e.g. London"
+                    value={formData?.location?.city || ""}
+                    onChange={(e) => setFormData(prev => prev ? ({ 
+                        ...prev, 
+                        location: { ...prev.location, city: e.target.value } 
+                    }) : null)}
+                    className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary/50 text-sm"
+                  />
+               ) : (
+                  <p className="text-white text-sm">{aboutData?.location?.city || "Not set"}</p>
+               )}
+            </div>
+
+            <div className="space-y-2">
+               <label className="text-xs uppercase font-bold text-slate-500 tracking-wider">Country</label>
+               {isEditing ? (
+                  <input
+                    type="text"
+                    placeholder="e.g. UK"
+                    value={formData?.location?.country || ""}
+                    onChange={(e) => setFormData(prev => prev ? ({ 
+                        ...prev, 
+                        location: { ...prev.location, country: e.target.value } 
+                    }) : null)}
+                    className="w-full bg-black/20 border border-white/10 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-primary/50 text-sm"
+                  />
+               ) : (
+                  <p className="text-white text-sm">{aboutData?.location?.country || "Not set"}</p>
+               )}
+            </div>
+
           </div>
 
         </div>

@@ -4,9 +4,9 @@ import { Timestamp } from "firebase/firestore";
 
 export interface ContactDetails{
   email:string;
-  githubUrl?:string,
-  linkedInUrl?:string,
-  twitterUrl?:string,
+  github_url?:string,
+  linkedIn_url?:string,
+  twitter_url?:string,
   phone?:string
 }
 
@@ -20,6 +20,11 @@ export interface Message{
     date?:Timestamp,
 }
 
+export interface LocationDetails{
+  city?:string;
+  county?:string;
+  country?:string;
+}
 export interface About{
   name:string;
   title:string[];
@@ -27,6 +32,7 @@ export interface About{
   description:string;
   resume_url?:string;
   contact_details:ContactDetails
+  location?:LocationDetails;
 
 }
 
