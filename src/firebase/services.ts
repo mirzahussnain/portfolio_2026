@@ -11,7 +11,8 @@ import {
   increment,
 } from "firebase/firestore";
 import { db } from "./config";
-import { About, Education, Experience, Project, Skill } from "../types";
+import { About, Education, Experience, Message, Project, Skill } from "../types";
+
 
 // --- FETCHING DATA ---
 export const fetchAdminDocument = async () => {
@@ -53,11 +54,13 @@ export const fetchCollection = async (collectionName: string) => {
         return items as Experience[];
       case "qualifications":
         return items as Education[];
+      case "messages":
+        return items as Message[];
       default:
         return items;
     }
   } else {
-    throw new Error(`No documents found in collection: ${collectionName}`);
+    return null;
   }
 };
 
@@ -103,7 +106,7 @@ export const addItem = async (collectionName: string, data: any) => {
           ending_date: Timestamp.fromDate(new Date(data.ending_date)),
           starting_date: Timestamp.fromDate(new Date(data.starting_date)),
         };
-        
+
         response = await addDoc(ref, { ...experience });
         break;
     }
@@ -114,6 +117,23 @@ export const addItem = async (collectionName: string, data: any) => {
   }
 };
 
+// Adding Profile Details//
+export const updateAboutDetails=async (data:About)=>{
+  try{
+    const adminDocRef = doc(db, "portfolio", "admin");
+    await updateDoc(adminDocRef, {
+        "about.name": data.name,
+        "about.description": data.description,
+        "about.contact_details.email": data.contact_details.email,
+        "about.resume_url": data.resume_url,
+        "about.avatar_url": data.avatar_url, // Uncomment if you want to update image URL too
+      });
+
+    return {success:true, message:'Profile updated successfully.'}
+  }catch (error){
+    return {success:false, message:error.message}
+  }
+}
 // --- DELETING DATA ---
 export const deleteItem = async (collectionName: string, id: string) => {
   try {
@@ -128,6 +148,8 @@ export const deleteItem = async (collectionName: string, id: string) => {
           ? "Skill"
           : collectionName === "experiences"
           ? "Experience"
+          : collectionName === "messages"
+          ? "Message"
           : "Education/Qualification"
       } Deleted Successfully`,
     };
@@ -224,13 +246,7 @@ export const updateExperience = async (
   experienceId: string
 ) => {
   try {
-    const docRef = doc(
-      db,
-      "portfolio",
-      "admin",
-      "experiences",
-      experienceId
-    );
+    const docRef = doc(db, "portfolio", "admin", "experiences", experienceId);
     const response = await updateDoc(docRef, {
       ...formData,
       ending_date: Timestamp.fromDate(new Date(formData.ending_date)),
@@ -238,10 +254,10 @@ export const updateExperience = async (
       skills: formData.skills
         .split(",")
         .map((skill) => skill.trim())
-        .filter((skill) => skill !== "")
+        .filter((skill) => skill !== ""),
     });
 
-     return { success: true, message: "Experience updated successfully." };
+    return { success: true, message: "Experience updated successfully." };
   } catch (error) {
     return { success: false, message: error.message };
   }
@@ -254,8 +270,8 @@ export const updateEducation = async (
     ending_date: string;
     starting_date: string;
     grade: string;
-    major:string;
-    institution:string,
+    major: string;
+    institution: string;
     type: string;
   },
   qualificationId: string
@@ -272,11 +288,41 @@ export const updateEducation = async (
       ...formData,
       ending_date: Timestamp.fromDate(new Date(formData.ending_date)),
       starting_date: Timestamp.fromDate(new Date(formData.starting_date)),
-      
     });
 
-     return { success: true, message: "Education updated successfully." };
+    return { success: true, message: "Education updated successfully." };
   } catch (error) {
     return { success: false, message: error.message };
   }
 };
+
+export const sendMessage = async (data: {
+  name: string;
+  email: string;
+  message: string;
+}) => {
+  try {
+    const response = await addDoc(
+      collection(db, "portfolio", "admin", "messages"),
+      {
+        ...data,
+        date: Timestamp.now(),
+        read: false,
+      }
+    );
+    return { success: true, id: response.id };
+  } catch (error: any) {
+    return { success: false, message: error.message };
+  }
+};
+
+export const updateMessage=async(data:Message,id:string)=>{
+ 
+  const docRef=doc(db,"portfolio","admin","messages",id);
+  try{
+    await updateDoc(docRef,{...data})
+    return {success:true,message:'Message Marked as Read'}
+  }catch(error){
+    return {success:false,message:error.message}
+  }
+}

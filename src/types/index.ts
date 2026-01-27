@@ -1,3 +1,4 @@
+import { Timestamp } from "firebase/firestore";
 
 
 
@@ -9,16 +10,25 @@ export interface ContactDetails{
   phone?:string
 }
 
-export interface About{
-  name:string;
-  title:string[],
-  avatarUrl?:string,
-  description:string,
-  resumeUrl?:string
-  contactDetails:ContactDetails
-
+export interface Message{
+  _id?:string,
+    name:string,
+    email:string,
+    subject:string,
+    message:string,
+    read?:boolean,
+    date?:Timestamp,
 }
 
+export interface About{
+  name:string;
+  title:string[];
+  avatar_url?:string;
+  description:string;
+  resume_url?:string;
+  contact_details:ContactDetails
+
+}
 
 export interface ProjectUrl{
   demo?:string,

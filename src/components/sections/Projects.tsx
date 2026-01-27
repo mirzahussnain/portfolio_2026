@@ -1,59 +1,59 @@
 import { LazyImage } from "../ui/LazyImage";
-
 import { useSelector } from "react-redux";
-
 import { RootState } from "@/src/redux/store";
-
-import { getYear, stringToDate } from "@/src/lib/utils";
 import { useState, useMemo } from "react";
 import { motion } from "motion/react";
+import { Link } from "react-router-dom"; 
 
-const TABS = ["All", "React", "Next.js", "Full Stack"];
+const TABS = ["All", "UI/UX", "Next.js", "Full Stack", "DevOps"];
 
 const Projects: React.FC = () => {
   const projects = useSelector((state: RootState) => state.projects);
   const [activeTab, setActiveTab] = useState("All");
 
   const filteredProjects = useMemo(() => {
-    let filtered = projects;
+    let filtered = [...projects];
+
+    // 1. Sort Newest First
+    filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    // 2. Filter by Tab
     if (activeTab !== "All") {
-      filtered = projects.filter(
-        (p) => p.stack?.includes(activeTab) || p.stack?.includes(activeTab)
+      filtered = filtered.filter(
+        (p) => p.stack?.includes(activeTab) || p.stack?.some(s => s.includes(activeTab))
       );
     }
-    return filtered.slice(0, 6);
+    
+    // 3. STRICT LIMIT TO 3
+    return filtered.slice(0, 3);
   }, [projects, activeTab]);
+
   return (
-    <section id="projects" className="py-24 px-6">
+    <section id="projects" className="py-24 px-6 relative">
       <div className="max-w-7xl mx-auto">
+        {/* Header */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center justify-center px-3 py-1 mb-4 rounded-full bg-primary/10 border border-primary/20 backdrop-blur-sm">
             <span className="text-xs font-semibold tracking-wide text-primary uppercase">
-              Portfolio
+              Featured Work
             </span>
           </div>
-
           <h2 className="text-4xl md:text-5xl font-black tracking-tight text-white mb-4">
-            Selected{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-primary to-blue-400">
-              Projects
-            </span>
+            Selected <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Projects</span>
           </h2>
-
           <p className="max-w-2xl mx-auto text-lg text-slate-400">
-            A showcase of technical experiments, full-stack applications, and
-            design systems built with modern web technologies.
+             A glimpse into my technical experiments and applications.
           </p>
         </div>
+
+        {/* Tabs */}
         <div className="flex flex-wrap justify-center gap-2 mb-12">
           {TABS.map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`relative px-4 py-2 rounded-full text-sm font-semibold transition-colors cursor-pointer ${
-                activeTab === tab
-                  ? "text-white"
-                  : "text-slate-400 hover:text-white bg-white/5"
+                activeTab === tab ? "text-white" : "text-slate-400 hover:text-white bg-white/5"
               }`}
             >
               {activeTab === tab && (
@@ -68,112 +68,96 @@ const Projects: React.FC = () => {
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProjects.map((project) => (
-            <article
-              key={project._id}
-              className="glass-card group cursor-pointer relative flex flex-col rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:border-primary/30"
-            >
-              <div className="relative aspect-video overflow-hidden">
-                <LazyImage
-                  src={project.url.image}
-                  alt={project.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
 
-                <div className="absolute inset-0 bg-linear-to-t from-background-dark/80 to-transparent opacity-60 "></div>
+        {/* --- GRID OR EMPTY STATE --- */}
+        {filteredProjects.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProjects.map((project) => (
+              <article
+                key={project._id}
+                className="glass-card group cursor-pointer relative flex flex-col rounded-2xl overflow-hidden border border-white/5 hover:border-primary/30 transition-all duration-300 hover:-translate-y-2 bg-white/5"
+              >
+                {/* Image Container */}
+                <div className="relative aspect-video overflow-hidden shrink-0">
+                  <LazyImage
+                    src={project.url.image}
+                    alt={project.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background-dark/90 to-transparent opacity-60"></div>
+                  {project.version && (
+                      <div className="absolute top-3 right-3 z-20">
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-black/60 text-white backdrop-blur-md border border-white/10">
+                          {project.version}
+                      </span>
+                      </div>
+                  )}
+                </div>
 
-                {project.version && (
-                  <div className="absolute top-4 right-4 z-20">
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-black/50 text-white backdrop-blur-md border border-white/10">
-                      {project.version}
-                    </span>
-                  </div>
-                )}
-              </div>
-
-              <div className="flex flex-col grow p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-1">
+                {/* Content */}
+                <div className="flex flex-col flex-grow p-6">
+                  <div className="flex items-center justify-between mb-3">
                     <h3 className="text-xl font-bold text-white group-hover:text-primary transition-colors">
                       {project.title}
                     </h3>
-
-                    <span className="text-xs font-bold text-white group-hover:bg-white group-hover:text-primary bg-primary transition-colors rounded-sm px-3">
-                      {getYear(stringToDate(project.date))}
+                    <span className="material-symbols-outlined text-slate-500 text-[20px]">
+                      {project.icon || "code"}
                     </span>
                   </div>
 
-                  <span className="material-symbols-outlined text-slate-500 text-[20px]">
-                    {project.icon || "code"}
-                  </span>
-                </div>
+                  <p className="text-slate-400 text-sm leading-relaxed mb-6 line-clamp-3">
+                    {project.description}
+                  </p>
 
-                <p className="text-slate-400 text-sm leading-relaxed mb-6 grow overflow-hidden   text-wrap line-clamp-2 group-hover:line-clamp-none  max-h-[3rem] group-hover:overflow-visible group-hover:max-h-[10rem] ">
-                  {project.description}
-                </p>
+                  <div className="flex flex-wrap gap-2 mb-6 mt-auto">
+                    {project.stack.slice(0, 6).map((tag, i) => (
+                      <span key={i} className="px-2 py-1 rounded text-[11px] font-medium bg-white/5 text-slate-300 border border-white/5">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
 
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {project.stack.map((tag, index) => (
-                    <span
-                      key={index}
-                      className="px-2.5 py-1 rounded-md text-xs font-medium bg-white/5 text-slate-300 border border-white/5 group-hover:text-primary group-hover:border-primary/20"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="flex items-center gap-3 mt-auto">
-                  <button className="cursor-pointer flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary hover:bg-primary/90 text-background-dark text-sm font-bold rounded-lg transition-colors group/btn">
-                    <a href={project.url.demo} target="_blank" rel="noreferrer">
+                  <div className="flex items-center gap-3">
+                    <a href={project.url.demo} target="_blank" rel="noreferrer" className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-background-dark text-sm font-bold rounded-lg transition-colors group/btn">
                       Live Demo
+                      <span className="material-symbols-outlined text-[16px] transition-transform group-hover/btn:translate-x-0.5">arrow_outward</span>
                     </a>
-
-                    <span className="material-symbols-outlined text-[18px] transition-transform group-hover/btn:translate-x-0.5">
-                      arrow_outward
-                    </span>
-                  </button>
-
-                  <button className="flex items-center justify-center w-10 h-10 rounded-lg border border-slate-600 text-slate-300 hover:text-white hover:border-white hover:bg-white/5 transition-all">
-                    <a
-                      className="material-symbols-outlined text-[20px] cursor-pointer"
-                      href={project.url.code}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      code
+                    <a href={project.url.code} target="_blank" rel="noreferrer" className="size-9 flex items-center justify-center rounded-lg border border-white/10 text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                      <span className="material-symbols-outlined text-[18px]">code</span>
                     </a>
-                  </button>
+                  </div>
                 </div>
-              </div>
-            </article>
-          ))}
-        </div>
-
-        {/* --- Empty State --- */}
-        {filteredProjects.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-slate-500">
-              No projects found in this category.
+              </article>
+            ))}
+          </div>
+        ) : (
+          // --- EMPTY STATE ADDED BACK ---
+          <div className="text-center py-20 border border-dashed border-white/10 rounded-3xl bg-white/5">
+            <span className="material-symbols-outlined text-4xl text-slate-600 mb-2">folder_off</span>
+            <p className="text-slate-500 mb-2">
+              No projects found for <span className="text-white font-bold">"{activeTab}"</span>.
             </p>
             <button
               onClick={() => setActiveTab("All")}
-              className="text-primary font-bold mt-2 hover:underline cursor-pointer"
+              className="text-primary font-bold hover:underline cursor-pointer"
             >
               Clear Filters
             </button>
           </div>
-        ) : (
-          <div className="mt-16 text-center">
-            <button className="group inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 transition-colors">
-              <span>View Full Portfolio</span>
+        )}
 
-              <span className="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1">
-                arrow_forward
-              </span>
-            </button>
-          </div>
+        {/* View All Button (Only show if we have projects overall) */}
+        {projects.length > 3 && (
+            <div className="mt-16 text-center">
+                <Link to="/projects">
+                    <button className="group inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white/5 border border-white/10 text-white font-medium hover:bg-white/10 hover:border-primary/30 transition-all cursor-pointer">
+                    <span>View Full Portfolio</span>
+                    <span className="material-symbols-outlined text-[20px] transition-transform group-hover:translate-x-1">
+                        arrow_forward
+                    </span>
+                    </button>
+                </Link>
+            </div>
         )}
       </div>
     </section>

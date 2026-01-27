@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import MileStoneModal from "../ui/MileStoneModal";
 import { getFullDate } from "@/src/lib/utils";
+import { toast } from "sonner";
 
 type mileStoneType= "education" | "experience";
 const ManageResume = () => {
@@ -46,9 +47,9 @@ const ManageResume = () => {
         else{
             dispatch(deleteEducation(id));
         }
-        alert(res.message);
+        toast.success(res.message);
       } else {
-        alert(res.message);
+        toast.error(res.message);
       }
     }
   };

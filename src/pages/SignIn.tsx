@@ -4,6 +4,10 @@ import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { cleanErrorMessage, loginUser } from "../firebase/auth";
+import { fetchAdminDocument } from "../firebase/services";
+import { setAbout } from "../redux/features/AboutSlice";
+import { About } from "../types";
+import { toast } from "sonner";
 
 const SignIn: React.FC = () => {
   const {
@@ -25,7 +29,12 @@ const SignIn: React.FC = () => {
       const user = await loginUser(data.email, data.password);
       const token = await user?.getIdToken();
       if (user && token) {
-        alert("Login Successful!");
+        toast.success("Login Successful!");
+        const result=await fetchAdminDocument();
+        if(result){
+          console.log("Fetched about data:", result);
+          dispatch(setAbout({ ...result } as About));
+        }
         dispatch(
           setCredentials({
             user: {

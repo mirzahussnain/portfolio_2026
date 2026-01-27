@@ -6,6 +6,7 @@ import { LazyImage } from "../ui/LazyImage";
 import ProjectModal from "../ui/ProjectModal";
 import { deleteItem } from "@/src/firebase/services";
 import { deleteProject } from "@/src/redux/features/ProjectSlice";
+import { toast } from "sonner";
 const ManageProjects = () => {
   
   const projects = useSelector((state: RootState) => state.projects);
@@ -29,10 +30,10 @@ const ManageProjects = () => {
         const res=await deleteItem('projects',id)
         if(res.success){
             dispatch(deleteProject(id));
-            alert(res.message);
+            toast.success(res.message);
         }
         else{
-            alert(res.message);
+            toast.error(res.message);
         }
     }
   };

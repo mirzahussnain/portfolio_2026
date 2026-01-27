@@ -15,6 +15,7 @@ import {
   SKILL_LEVELS,
   TAILWIND_COLORS,
 } from "@/src/lib/constants";
+import { toast } from "sonner";
 
 interface SkillModalProps {
   isOpen: boolean;
@@ -74,7 +75,7 @@ const SkillModal: React.FC<SkillModalProps> = ({
               level: formData.level as Skill["level"],
             })
           );
-          alert(response.message);
+          toast.success(response.message);
           onClose();
         } else {
           throw new Error(response.message);
@@ -91,14 +92,14 @@ const SkillModal: React.FC<SkillModalProps> = ({
               level: formData.level as Skill["level"],
             })
           );
-          alert("Skill Added Successfully");
+          toast.success("Skill Added Successfully");
         } else {
           throw new Error(`Couldn't Add Skill:${response.message}`);
         }
       }
     } catch (error) {
       console.error("Operation failed:", error);
-      alert(`Failed to ${mode === "editing" ? "save" : "add"} skill.`);
+      toast.error(`Failed to ${mode === "editing" ? "save" : "add"} skill.`);
     } finally {
       setLoading(false);
     }

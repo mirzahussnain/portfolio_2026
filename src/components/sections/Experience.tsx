@@ -6,12 +6,14 @@ import type { Education, Experience, TimelineItem } from '@/src/types';
 import React, { useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import Timeline from '../ui/Timeline';
+import { toast } from 'sonner';
 
 
 const Experience: React.FC = () => {
  // ✅ Good: Only re-renders if these specific slices change
 const experiences = useSelector((state: RootState) => state.experiences);
 const educations = useSelector((state: RootState) => state.educations);
+const about=useSelector((state:RootState)=>state.about);
 
  
   const timelineData=useMemo(()=>{
@@ -46,7 +48,15 @@ const educations = useSelector((state: RootState) => state.educations);
     return [...workItems,...eduItems].sort((a,b)=>b.sortDate - a.sortDate);
   },[experiences,educations])
  
-  
+  const handleDownloadCV = () => {
+    if (about && about.resume_url) {
+      // Open the resume URL in a new tab (triggering download or view)
+      window.open(about.resume_url, '_blank');
+    } else {
+      // Alert if resume is missing
+      toast.error("Resume not present");
+    }
+  };
   return (
     <section id="experience" className="py-24 px-6 relative bg-background-dark overflow-hidden">
       <div className="max-w-5xl mx-auto">
@@ -62,7 +72,9 @@ const educations = useSelector((state: RootState) => state.educations);
               My professional journey through software engineering, highlighting key roles, academic achievements, and the technologies I've mastered.
             </p>
           </div>
-          <button className="group flex items-center justify-center gap-3 glass-card hover:bg-white/10 text-white py-3 px-6 rounded-xl transition-all font-semibold">
+          <button
+          onClick={handleDownloadCV} 
+          className="group flex items-center justify-center gap-3 glass-card hover:bg-white/10 text-white py-3 px-6 rounded-xl transition-all font-semibold">
             <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform">download</span>
             <span>Download CV</span>
           </button>

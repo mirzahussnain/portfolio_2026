@@ -10,6 +10,8 @@ import AdminLayout from "./layouts/AdminLayout";
 import { Provider } from "react-redux";
 import { store } from "./redux/store";
 import AdminDashboard from "./pages/AdminDashboard";
+import AllProjects from "./pages/Projects";
+import { Toaster } from "sonner";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -24,8 +26,13 @@ const router = createBrowserRouter([
         index: true,
         element: <App />,
       },
+      {
+        path: "projects",
+        element: <AllProjects />,
+      },
     ],
   },
+  
   {
     element: <AuthLayout />,
     children: [
@@ -50,6 +57,7 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <RouterProvider router={router} />
+      <Toaster position="top-center" richColors theme="dark" />
     </Provider>
   </React.StrictMode>
 );

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { use, useState } from "react";
 
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/src/redux/features/AuthSlice";
@@ -8,9 +8,11 @@ import { RootState } from "../redux/store";
 import { useViewCount } from "../lib/hooks";
 
 import ManageProjects from "../components/sections/ManageProjects";
+import ManageProfile from "../components/sections/ManageProfile";
 import ManageSkills from "../components/sections/ManageSkills";
 import ManageResume from "../components/sections/ManageResume";
 import { useNavigate } from "react-router-dom";
+import Inbox from "../components/sections/Inbox";
 
 const AdminDashboard: React.FC = () => {
   
@@ -24,11 +26,11 @@ const AdminDashboard: React.FC = () => {
   const { views, weekly, trend, loading } = useViewCount(true);
   const projects = useSelector((state: RootState) => state.projects);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "projects" | "skills" | "resume"
+    "overview" | "projects" | "skills" | "resume" | "inbox"| "settings"
   >("overview");
 
   const dispatch = useDispatch();
-  
+  const navigate=useNavigate();
  
 
   return (
@@ -64,7 +66,10 @@ const AdminDashboard: React.FC = () => {
             { id: "overview", icon: "dashboard", label: "Overview" },
             { id: "projects", icon: "work", label: "Manage Projects" },
             { id: "skills", icon: "psychology_alt", label: "Manage Skills" },
-            { id: "resume", icon: "article", label: "Resume & Exp" },
+            { id: "resume", icon: "article", label: "Education & Exp" },
+            {id: "inbox", icon: "inbox", label: "Inbox"},
+            { id: "settings", icon: "settings", label: "Manage Profile" },
+           
           ].map((item) => (
             <button
               key={item.id}
@@ -80,8 +85,17 @@ const AdminDashboard: React.FC = () => {
             </button>
           ))}
         </nav>
-
         <div className="mt-auto pt-4 border-t border-white/5">
+          <button
+            onClick={() => navigate("/")}
+            className="flex items-center gap-3 px-4 py-3 w-full text-slate-400 hover:text-blue-400 hover:bg-red-400/5 rounded-xl transition-all cursor-pointer"
+          >
+            <span className="material-symbols-outlined">home</span>
+            <p className="text-sm font-medium">View Portfolio</p>
+          </button>
+        </div>
+
+        <div className="pt-4 border-t border-white/5">
           <button
             onClick={() => dispatch(logout())}
             className="flex items-center gap-3 px-4 py-3 w-full text-slate-400 hover:text-red-400 hover:bg-red-400/5 rounded-xl transition-all cursor-pointer"
@@ -242,6 +256,8 @@ const AdminDashboard: React.FC = () => {
         {activeTab === "skills" && <ManageSkills />}
 
         {activeTab === "resume" && <ManageResume />}
+        {activeTab ==="inbox" && <Inbox/>}
+        {activeTab === "settings" && <ManageProfile/>}
       </main>
     </div>
   );

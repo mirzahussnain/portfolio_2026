@@ -20,15 +20,15 @@ export const stringToDate=(date:string)=>{
 
   }
 
-  export const uploadToCloudinary = async (file: File) => {
+  export const uploadToCloudinary = async (file: File,folder:string="portfolio-2026/projects",resourceType: "image" | "raw" | "auto" = "auto") => {
   const formData = new FormData();
   formData.append('file', file);
   
   const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
   const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET; 
   formData.append('upload_preset', UPLOAD_PRESET);
-  formData.append('folder', 'portfolio-2026/projects');
-  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+  formData.append('folder', folder);
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/${resourceType}/upload`, {
     method: 'POST',
     body: formData,
   });

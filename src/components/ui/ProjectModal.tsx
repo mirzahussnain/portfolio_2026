@@ -9,7 +9,9 @@ import {
   addNewProject,
   updateProjectDetail,
 } from "@/src/redux/features/ProjectSlice";
-import { Timestamp } from "firebase/firestore";
+import { toast } from "sonner";
+// Remove Timestamp import if not used
+// import { Timestamp } from "firebase/firestore";
 
 interface ProjectModalProps {
   isOpen: boolean;
@@ -17,6 +19,7 @@ interface ProjectModalProps {
   project: Project | null;
   mode: "editing" | "creation";
 }
+
 const ProjectModal: React.FC<ProjectModalProps> = ({
   isOpen,
   onClose,
@@ -26,9 +29,14 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
   const [loading, setLoading] = useState(false);
 
   const dispatch = useDispatch();
-  // Track the raw file separately
   const [newImageFile, setNewImageFile] = useState<File | null>(null);
   const [projectID, setProjectID] = useState<string | null>(null);
+  
+  // New state for checkboxes
+  const [isDevOps, setIsDevOps] = useState(false);
+  const [isUIUX, setIsUIUX] = useState(false);
+  const [isFullstack, setIsFullstack] = useState(false);
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -48,10 +56,10 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
     setLoading(true);
     try {
       let payload = { ...formData };
+      
       // 1. CHECK: Did the user select a NEW file?
       if (newImageFile) {
-        // 2. NOW we upload to Cloudinary (Lazy Upload)
-        const uploadData = await uploadToCloudinary(newImageFile);
+        const uploadData = await uploadToCloudinary(newImageFile,"portfolio-2026/projects","image");
 
         payload = {
           ...payload,
@@ -61,62 +69,95 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
             image_public_id: uploadData.publicId,
           },
         };
-
-        // (Optional: Here you could call a backend API to delete the OLD image using formData.imagePublicId)
       }
 
-      const formattedStack = payload.stack
+      // --- Calculate the stack string including checkboxes ---
+      let stackString = payload.stack;
+      
+      const hasTag = (tag: string) => stackString.toLowerCase().split(',').map(s => s.trim()).includes(tag.toLowerCase());
+
+      if (isDevOps && !hasTag("DevOps")) {
+        stackString = stackString ? `${stackString}, DevOps` : "DevOps";
+      }
+      if (isUIUX && !hasTag("UI/UX")) {
+         stackString = stackString ? `${stackString}, UI/UX` : "UI/UX";
+      }
+      if(isFullstack && !hasTag("Full Stack")) {
+         stackString = stackString ? `${stackString}, Full Stack` : "Full Stack";
+      }
+
+      // 2. Prepare Payload for Database (Expects stack as STRING)
+      const dbPayload = {
+        ...payload,
+        stack: stackString, 
+      };
+
+      // Prepare Payload for Redux (Expects stack as ARRAY)
+      const formattedStack = stackString
       .split(",")
       .map((s) => s.trim())
       .filter((s) => s !== "");
 
+      const reduxPayload = {
+        ...payload,
+        stack: formattedStack,
+      };
+
       if (mode === "editing") {
         if (!projectID) throw new Error("Project ID is missing");
-        const response = await updateProject(formData, projectID);
+        
+        // Send 'dbPayload' (string stack) to firebase service
+        const response = await updateProject(dbPayload, projectID);
+        
         if (response.success) {
+          // Send 'reduxPayload' (array stack) to Redux store
           dispatch(
             updateProjectDetail({
               _id: projectID,
-              ...payload,
-              stack: formattedStack,
+              ...reduxPayload,
             })
           );
-          alert(response.message);
+          toast.success(response.message);
           onClose();
         } else {
           throw new Error(response.message);
         }
       } else {
-        const response = await addItem("projects", payload);
+        // Fix: Send 'dbPayload' (string stack) to firebase service
+        const response = await addItem("projects", dbPayload);
         if (response && response.id) {
         
+          // Fix: Send 'reduxPayload' (array stack) to Redux store
           dispatch(
             addNewProject({
               _id: response.id,
-              ...payload,
-              stack: formattedStack,
+              ...reduxPayload,
             })
           );
-          alert("Project Added Successfully");
+          toast.success("Project Added Successfully");
+          onClose(); 
         } else {
           throw new Error("Couldn't Add Project");
         }
       }
     } catch (error) {
       console.error("Operation failed:", error);
-      alert(`Failed to ${mode === "editing" ? "save" : "add"} project.`);
+      toast.error(`Failed to ${mode === "editing" ? "save" : "add"} project.`);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Only update form state when the modal is OPEN
     if (isOpen) {
       if (project && mode === "editing") {
-        // --- EDIT MODE: Populate with Project Data ---
         setNewImageFile(null);
         setProjectID(project._id);
+        
+        const currentStack = project.stack || [];
+        setIsDevOps(currentStack.some(s => s.toLowerCase() === 'devops'));
+        setIsUIUX(currentStack.some(s => s.toLowerCase() === 'ui/ux'));
+
         setFormData({
           title: project.title || "",
           description: project.description || "",
@@ -131,9 +172,10 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
           stack: project.stack.join(", ") || "",
         });
       } else {
-        // --- ADD MODE: Clear Everything ---
         setNewImageFile(null);
         setProjectID(null);
+        setIsDevOps(false);
+        setIsUIUX(false);
         setFormData({
           title: "",
           description: "",
@@ -149,7 +191,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
         });
       }
     }
-  }, [project,isOpen,mode]);
+  }, [project, isOpen, mode]);
 
   if (!isOpen) return null;
 
@@ -169,9 +211,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-      {/* Modal Container */}
       <div className="bg-slate-900 border border-white/10 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col relative">
-        {/* Header */}
         <div className="flex justify-between items-center p-6 border-b border-white/5 bg-slate-900 sticky top-0 z-10">
           <h3 className="text-xl font-bold text-white">{`${
             project !== null ? "Edit Project" : "Add New Project"
@@ -187,12 +227,11 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
         <form onSubmit={handleSubmit} className="p-3">
           <ImageUpload
             label="Project Cover"
-            currentImage={formData.url.image} // Show the (existing image by default for Edit Existing Project) | (default random image for create new project)
-            onFileSelect={(file) => setNewImageFile(file)} // Just store the file in state
+            currentImage={formData.url.image}
+            onFileSelect={(file) => setNewImageFile(file)}
             mode={mode}
           />
 
-          {/* Title & Version Row */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-300">
@@ -226,22 +265,18 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
               <input
                 type="date"
                 name="date"
-                // Input[type=date] REQUIRES format "YYYY-MM-DD".
-                // We convert your state safely to valid format.
                 value={
                   formData.date
                     ? new Date(formData.date).toISOString().split("T")[0]
                     : ""
                 }
                 onChange={handleChange}
-                // [color-scheme:dark] ensures the calendar popup matches your dark theme
                 className="w-full bg-slate-950 border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 focus:border-blue-500 outline-none [color-scheme:dark]"
               />
             </div>
           </div>
 
-          {/* Tech Stack */}
-          <div className="space-y-2">
+          <div className="space-y-2 mt-4">
             <label className="text-sm font-semibold text-slate-300">
               Tech Stack{" "}
               <span className="text-xs text-slate-500 font-normal">
@@ -255,10 +290,51 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
               className="w-full bg-slate-950 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:border-blue-500 outline-none"
               placeholder="React, TypeScript, Tailwind, Firebase"
             />
+            
+            {/* Checkboxes */}
+            <div className="flex gap-6 mt-3">
+              <label className="flex items-center gap-2 cursor-pointer group select-none">
+                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isDevOps ? 'bg-blue-600 border-blue-600' : 'border-slate-600 group-hover:border-slate-400'}`}>
+                  {isDevOps && <span className="material-symbols-outlined text-white text-[16px] font-bold">check</span>}
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={isDevOps} 
+                  onChange={(e) => setIsDevOps(e.target.checked)} 
+                  className="hidden" 
+                />
+                <span className="text-sm text-slate-300 group-hover:text-white">DevOps Project</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer group select-none">
+                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isUIUX ? 'bg-blue-600 border-blue-600' : 'border-slate-600 group-hover:border-slate-400'}`}>
+                   {isUIUX && <span className="material-symbols-outlined text-white text-[16px] font-bold">check</span>}
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={isUIUX} 
+                  onChange={(e) => setIsUIUX(e.target.checked)} 
+                  className="hidden" 
+                />
+                <span className="text-sm text-slate-300 group-hover:text-white">UI/UX Project</span>
+              </label>
+
+               <label className="flex items-center gap-2 cursor-pointer group select-none">
+                <div className={`w-5 h-5 rounded border flex items-center justify-center transition-colors ${isFullstack ? 'bg-blue-600 border-blue-600' : 'border-slate-600 group-hover:border-slate-400'}`}>
+                   {isFullstack && <span className="material-symbols-outlined text-white text-[16px] font-bold">check</span>}
+                </div>
+                <input 
+                  type="checkbox" 
+                  checked={isFullstack} 
+                  onChange={(e) => setIsFullstack(e.target.checked)} 
+                  className="hidden" 
+                />
+                <span className="text-sm text-slate-300 group-hover:text-white">FullStack Project</span>
+              </label>
+            </div>
           </div>
 
-          {/* Links Row */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
             <div className="space-y-2">
               <label className="text-sm font-semibold text-slate-300">
                 Live Demo URL
@@ -285,8 +361,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
             </div>
           </div>
 
-          {/* Description */}
-          <div className="space-y-2">
+          <div className="space-y-2 mt-4">
             <label className="text-sm font-semibold text-slate-300">
               Description
             </label>
@@ -300,8 +375,7 @@ const ProjectModal: React.FC<ProjectModalProps> = ({
             />
           </div>
 
-          {/* Footer Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+          <div className="flex justify-end gap-3 pt-4 border-t border-white/5 mt-4">
             <button
               type="button"
               onClick={onClose}

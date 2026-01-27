@@ -8,44 +8,64 @@ import { setEducation } from "../redux/features/EducationSlice";
 import { setExperiences } from "../redux/features/ExperienceSlice";
 import { setProjects } from "../redux/features/ProjectSlice";
 import { setSkills } from "../redux/features/SkillSlice";
-import { About, Skill, Project, Experience, Education } from "../types";
-
+import {
+  About,
+  Skill,
+  Project,
+  Experience,
+  Education,
+  Message,
+} from "../types";
+import { setMessages } from "../redux/features/MessageSlice";
+import { toast } from "sonner";
 
 const AdminLayout = () => {
-  const isAuthenticated=useSelector((state:RootState)=>state.auth.isAuthenticated);
+  const isAuthenticated = useSelector(
+    (state: RootState) => state.auth.isAuthenticated
+  );
   const [loading, setLoading] = useState(true);
-  const dispatch=useDispatch();
- 
-  useEffect(()=>{
-    const fetchPortfolioData=async()=>{
-      setLoading(true)
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchPortfolioData = async () => {
+      setLoading(true);
       //Fetch about data
-      try{
-        const aboutDetails:About=await fetchAdminDocument();
-        const skillsDetails:Skill[] | Project[] | Experience[] | Education[]=await fetchCollection("skills");
-        const projectsDetails:Skill[] | Project[] | Experience[] | Education[]=await fetchCollection("projects");
-        const experienceDetails:Skill[] | Project[] | Experience[] | Education[]=await fetchCollection("experiences");
-        const educationDetails:Skill[] | Project[] | Experience[] | Education[]=await fetchCollection("qualifications");
-        if(aboutDetails && skillsDetails && projectsDetails && experienceDetails && educationDetails ){
-          const aboutData:About=aboutDetails;
-          
-         dispatch(setAbout(aboutData));
-         dispatch(setSkills(skillsDetails as Skill[]))
-         dispatch(setExperiences(experienceDetails as Experience[]))
-         dispatch(setEducation(educationDetails as Education[]))
-         dispatch(setProjects(projectsDetails as Project[]))
-        }
-      }catch(error){
-        alert(error.message);
-      }
-      finally{
+      try {
+        const [
+          aboutDetails,
+          skillsDetails,
+          projectsDetails,
+          experienceDetails,
+          educationDetails,
+          messageDetails,
+        ] = await Promise.all([
+          fetchAdminDocument(),
+          fetchCollection("skills"),
+          fetchCollection("projects"),
+          fetchCollection("experiences"),
+          fetchCollection("qualifications"),
+          fetchCollection("messages"),
+        ]);
+
+        if (aboutDetails) dispatch(setAbout(aboutDetails as About));
+        if (skillsDetails) dispatch(setSkills(skillsDetails as Skill[]));
+        if (projectsDetails)
+          dispatch(setProjects(projectsDetails as Project[]));
+        if (experienceDetails)
+          dispatch(setExperiences(experienceDetails as Experience[]));
+        if (educationDetails)
+          dispatch(setEducation(educationDetails as Education[]));
+        if (messageDetails) dispatch(setMessages(messageDetails as Message[]));
+      } catch (error) {
+        console.error("Dashboard Load Error:", error);
+        toast.error(`Failed to load data: ${error.message}`);
+      } finally {
         setLoading(false);
       }
-    }
+    };
     fetchPortfolioData();
-  },[])
-  
-  
+  }, [dispatch]);
+
   if (loading) {
     return (
       <div className="h-screen w-full bg-background-dark flex items-center justify-center">
@@ -58,15 +78,15 @@ const AdminLayout = () => {
       </div>
     );
   }
-  
-  if(!isAuthenticated){
-      return <Navigate to="/signin" replace />;
+
+  if (!isAuthenticated) {
+    return <Navigate to="/signin" replace />;
   }
   return (
     <div className="min-h-screen">
-        <Outlet/>
+      <Outlet />
     </div>
-  )
-}
+  );
+};
 
-export default AdminLayout
+export default AdminLayout;

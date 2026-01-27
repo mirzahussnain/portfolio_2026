@@ -10,6 +10,7 @@ import {
 import { Education, Experience } from "@/src/types";
 import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+import { toast } from "sonner";
 
 interface MilestoneModalProps {
   isOpen: boolean;
@@ -118,7 +119,7 @@ const MileStoneModal = ({
                 throw new Error(`Something went wrong ${response?.message}`)
             }
         }
-        alert("Milestone updated successfully!");
+        toast.success("Milestone updated successfully!");
       } else {
         // ADD MODE
 
@@ -131,13 +132,13 @@ const MileStoneModal = ({
           } else {
             dispatch(addNewEducation({ ...payload, _id: newId }));
           }
-          alert("Milestone added successfully!");
+          toast.success("Milestone added successfully!");
         }
       }
       onClose();
     } catch (error) {
       console.error(error);
-      alert("Operation failed");
+      toast.error("Operation failed");
     } finally {
       formData.company="",
       formData.description="",

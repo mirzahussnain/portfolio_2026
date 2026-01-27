@@ -5,6 +5,7 @@ import { Skill } from "@/src/types";
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import SkillModal from "../ui/SkillsModal";
+import { toast } from "sonner";
 
 
 const ManageSkills = () => {
@@ -29,10 +30,10 @@ const ManageSkills = () => {
         const res=await deleteItem('skills',id)
         if(res.success){
             dispatch(deleteSkill(id));
-            alert(res.message);
+            toast.success(res.message);
         }
         else{
-            alert(res.message);
+            toast.error(res.message);
         }
     }
   };
@@ -60,7 +61,7 @@ const ManageSkills = () => {
           className="bg-primary hover:bg-primary/90 text-background-dark px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 transition-all shadow-lg shadow-primary/20"
         >
           <span className="material-symbols-outlined text-sm">add_circle</span>
-          New Project
+          New Skill
         </button>
       </div>
       <div className="glass-card rounded-2xl overflow-hidden border border-white/10">
