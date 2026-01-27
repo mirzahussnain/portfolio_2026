@@ -49,7 +49,7 @@ const Contact: React.FC = () => {
             <div className="space-y-6">
               <div>
                 <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary ring-1 ring-inset ring-primary/20 mb-4">
-                  Available for freelance
+                  Available for hire
                 </span>
                 <h2 className="text-4xl sm:text-5xl font-black tracking-tight text-white mb-4 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
                   Let's build something <br className="hidden sm:block" />{" "}

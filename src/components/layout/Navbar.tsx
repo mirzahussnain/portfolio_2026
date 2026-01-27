@@ -230,17 +230,17 @@ const Navbar: React.FC = () => {
       <div
         className={`${
           isMenuOpen ? "block" : "hidden"
-        } md:hidden fixed top-16 left-0 flex flex-col glass-card min-w-xs rounded-r-2xl z-50 shadow-lg`}
+        } md:hidden fixed top-16 left-0 flex flex-col glass-card rounded-tr-2xl min-w-xs rounded-r-2xl z-100 shadow-lg`}
       >
         {navItems.map((item) => (
           <Link
             to={item.href}
             key={item.label}
             onClick={() => setMenuOpen(false)} // Close menu on click
-            className={`w-full px-3 py-3 rounded-r-lg text-lg font-medium tracking-wide border-b-2 border-b-white/10 ${
+            className={`w-full px-3 py-3 text-lg first-of-type:rounded-tr-2xl font-medium tracking-wide border-b-2 border-b-white/10 ${
               activeTab === item.id
-                ? "bg-primary/10 text-white"
-                : "text-slate-400 bg-black/10"
+                ? "bg-primary/60 text-white"
+                : "text-slate-400 bg-black/40"
             }`}
           >
             {item.label}
@@ -249,9 +249,9 @@ const Navbar: React.FC = () => {
         {isAuthenticated ? (
           <>
             <Link
-              to="/admin/dashboard"
+              to="/dashboard"
               onClick={() => setMenuOpen(false)}
-              className="w-full px-3 py-3 rounded-lg text-lg text-white font-medium tracking-wide border-b-2 border-b-white/10 flex items-center gap-2"
+              className="w-full px-3 py-3 rounded-lg text-lg bg-black/40 text-slate-400 font-medium tracking-wide border-b-2 border-b-white/10 flex items-center gap-2"
             >
               <MdDashboard /> Dashboard
             </Link>
@@ -260,7 +260,7 @@ const Navbar: React.FC = () => {
                 handleLogout();
                 setMenuOpen(false);
               }}
-              className="w-full px-3 py-3 rounded-lg text-lg text-red-400 font-medium tracking-wide flex items-center gap-2 text-left"
+              className="w-full px-3 py-3 bg-black/40 rounded-lg text-lg text-red-400 font-medium tracking-wide flex items-center gap-2 text-left"
             >
               <MdLogout /> Sign Out
             </button>
