@@ -240,7 +240,7 @@ const Navbar: React.FC = () => {
             className={`w-full px-3 py-3 text-lg first-of-type:rounded-tr-2xl font-medium tracking-wide border-b-2 border-b-white/10 ${
               activeTab === item.id
                 ? "bg-primary/60 text-white"
-                : "text-slate-400 bg-black/40"
+                : "text-slate-400 bg-black/80"
             }`}
           >
             {item.label}
@@ -251,7 +251,7 @@ const Navbar: React.FC = () => {
             <Link
               to="/dashboard"
               onClick={() => setMenuOpen(false)}
-              className="w-full px-3 py-3 rounded-lg text-lg bg-black/40 text-slate-400 font-medium tracking-wide border-b-2 border-b-white/10 flex items-center gap-2"
+              className="w-full px-3 py-3 rounded-lg text-lg bg-black/80 text-slate-400 font-medium tracking-wide border-b-2 border-b-white/10 flex items-center gap-2"
             >
               <MdDashboard /> Dashboard
             </Link>
@@ -260,7 +260,7 @@ const Navbar: React.FC = () => {
                 handleLogout();
                 setMenuOpen(false);
               }}
-              className="w-full px-3 py-3 bg-black/40 rounded-lg text-lg text-red-400 font-medium tracking-wide flex items-center gap-2 text-left"
+              className="w-full px-3 py-3 bg-black/80 rounded-lg text-lg text-red-400 font-medium tracking-wide flex items-center gap-2 text-left"
             >
               <MdLogout /> Sign Out
             </button>

@@ -5,7 +5,7 @@ import { logout } from "@/src/redux/features/AuthSlice";
 import { VscClose } from "react-icons/vsc";
 import { MdOutlineMenu } from "react-icons/md";
 import { RootState } from "../redux/store";
-import { useViewCount } from "../lib/hooks";
+import { useInboxCount, useViewCount } from "../lib/hooks";
 
 import ManageProjects from "../components/sections/ManageProjects";
 import ManageProfile from "../components/sections/ManageProfile";
@@ -15,23 +15,22 @@ import { useNavigate } from "react-router-dom";
 import Inbox from "../components/sections/Inbox";
 
 const AdminDashboard: React.FC = () => {
-  
-
-  
   // const experiences = useSelector((state: RootState) => state.experiences);
-
-  
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { views, weekly, trend, loading } = useViewCount(true);
+  const {
+    count: messageCount,
+    unread,
+    loading: inboxLoading,
+  } = useInboxCount();
   const projects = useSelector((state: RootState) => state.projects);
   const [activeTab, setActiveTab] = useState<
-    "overview" | "projects" | "skills" | "resume" | "inbox"| "settings"
+    "overview" | "projects" | "skills" | "resume" | "inbox" | "settings"
   >("overview");
 
   const dispatch = useDispatch();
-  const navigate=useNavigate();
- 
+  const navigate = useNavigate();
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-background-dark text-white relative">
@@ -67,9 +66,8 @@ const AdminDashboard: React.FC = () => {
             { id: "projects", icon: "work", label: "Manage Projects" },
             { id: "skills", icon: "psychology_alt", label: "Manage Skills" },
             { id: "resume", icon: "article", label: "Education & Exp" },
-            {id: "inbox", icon: "inbox", label: "Inbox"},
+            { id: "inbox", icon: "inbox", label: "Inbox" },
             { id: "settings", icon: "settings", label: "Manage Profile" },
-           
           ].map((item) => (
             <button
               key={item.id}
@@ -189,8 +187,8 @@ const AdminDashboard: React.FC = () => {
                         trend > 0
                           ? "text-blue-400"
                           : trend == 0
-                          ? "text-slate-500"
-                          : "text-red-400"
+                            ? "text-slate-500"
+                            : "text-red-400"
                       }`}
                     >
                       <span
@@ -199,8 +197,8 @@ const AdminDashboard: React.FC = () => {
                         {trend > 0
                           ? "trending_up"
                           : trend < 0
-                          ? "trending_down"
-                          : trend == 0 && "trending_flat"}
+                            ? "trending_down"
+                            : trend == 0 && "trending_flat"}
                       </span>
                       <span>
                         {trend >= 0 ? "+" : "-"}
@@ -219,9 +217,25 @@ const AdminDashboard: React.FC = () => {
                     mail
                   </span>
                 </div>
-                <p className="text-4xl font-black text-white">23</p>
+
+                {/* 4. Use the Real Data */}
+                <p className="text-4xl font-black text-white">
+                  {inboxLoading ? (
+                    <span className="text-2xl animate-pulse">...</span>
+                  ) : (
+                    messageCount
+                  )}
+                </p>
+
                 <div className="flex items-center gap-2 mt-2 text-xs text-slate-500">
-                  <span>Last inquiry 2h ago</span>
+                  {/* Optional: Show unread count if you implement 'read' status */}
+                  {unread > 0 ? (
+                    <span className="text-purple-400 font-bold">
+                      {unread} unread messages
+                    </span>
+                  ) : (
+                    <span>All caught up</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -256,8 +270,8 @@ const AdminDashboard: React.FC = () => {
         {activeTab === "skills" && <ManageSkills />}
 
         {activeTab === "resume" && <ManageResume />}
-        {activeTab ==="inbox" && <Inbox/>}
-        {activeTab === "settings" && <ManageProfile/>}
+        {activeTab === "inbox" && <Inbox />}
+        {activeTab === "settings" && <ManageProfile />}
       </main>
     </div>
   );

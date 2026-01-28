@@ -1,4 +1,4 @@
-import { doc, onSnapshot, Timestamp, updateDoc } from "firebase/firestore";
+import { collection, doc, onSnapshot, Timestamp, updateDoc } from "firebase/firestore";
 import { useState, useEffect } from "react";
 import { db } from "../firebase/config";
 
@@ -18,7 +18,7 @@ export const useViewCount = (isAdmin = false) => {
       (docSnap) => {
         if (docSnap.exists()) {
           const fullData = docSnap.data();
-          const viewStats = fullData.view || {};
+          const viewStats = fullData.views || {};
           const totalViews = viewStats.count || 0;
 
           // --- ADMIN LOGIC ---
@@ -39,10 +39,10 @@ export const useViewCount = (isAdmin = false) => {
               );
 
               updateDoc(docRef, {
-                "view.last_snapshot_date": Timestamp.now(),
-                "view.last_snapshot_count": totalViews,
-                "view.weekly_views": newWeeklyViews,
-                "view.trend_percentage": trend,
+                "views.last_snapshot_date": Timestamp.now(),
+                "views.last_snapshot_count": totalViews,
+                "views.weekly_views": newWeeklyViews,
+                "views.trend_percentage": trend,
               }).catch((err) =>
                 console.warn("Failed to update stats:", err.message)
               );
@@ -63,7 +63,7 @@ export const useViewCount = (isAdmin = false) => {
       },
       // 3. 🛡️ ERROR CALLBACK (Crucial for Logout)
       (error) => {
-        // This catches "Missing or insufficient permissions" when you logout
+        // This catches "Missing or insufficient permissions" when  logout
         console.log(
           "View listener stopped (likely logged out):",
           error.message
@@ -77,4 +77,31 @@ export const useViewCount = (isAdmin = false) => {
   }, [isAdmin]);
 
   return data;
+};
+
+export const useInboxCount = () => {
+  const [count, setCount] = useState(0);
+  const [unread, setUnread] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // 1. Reference the 'messages' collection
+    const collectionRef = collection(db, "messages"); 
+
+    // 2. Listen to real-time updates
+    const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
+      setCount(snapshot.size); // Total messages
+      
+      // Calculate unread
+    
+      const unreadCount = snapshot.docs.filter(doc => !doc.data().read).length;
+      setUnread(unreadCount);
+      
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  return { count, unread, loading };
 };

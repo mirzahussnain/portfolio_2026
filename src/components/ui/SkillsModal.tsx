@@ -369,7 +369,7 @@ const SkillModal: React.FC<SkillModalProps> = ({
             <label className="text-sm font-semibold text-slate-300">
               Proficiency Level
             </label>
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
               {SKILL_LEVELS.map((lvl) => (
                 <button
                   key={lvl}

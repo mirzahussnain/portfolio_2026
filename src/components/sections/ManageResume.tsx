@@ -140,7 +140,7 @@ const ManageResume = () => {
             onClick={() => handleAddMileStoneClick()}
           >
             <span className="material-symbols-outlined text-sm">add</span>
-            Add Milestone
+           <p className="max-sm:hidden">New Milestone</p>
           </button>
         </div>
       </div>
