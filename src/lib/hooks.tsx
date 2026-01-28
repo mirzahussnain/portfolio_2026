@@ -23,8 +23,23 @@ export const useViewCount = (isAdmin = false) => {
 
           // --- ADMIN LOGIC ---
           if (isAdmin) {
-            const lastDate =
-              viewStats.last_snapshot_date?.toDate() || new Date();
+           let lastDate = new Date(); // Default to now
+            const rawDate = viewStats.last_snapshot_date;
+
+            if (rawDate) {
+                // If it's a real Firestore Timestamp
+                if (typeof rawDate.toDate === 'function') {
+                    lastDate = rawDate.toDate();
+                } 
+                // If it's already a JS Date (sometimes happens in local cache)
+                else if (rawDate instanceof Date) {
+                    lastDate = rawDate;
+                }
+                // If it's a seconds/nanoseconds object (serialized timestamp)
+                else if (rawDate.seconds) {
+                    lastDate = new Date(rawDate.seconds * 1000);
+                }
+            }
             const lastCount = viewStats.last_snapshot_count || 0;
             const previousWeekly = viewStats.weekly_views || 1;
 
@@ -86,7 +101,7 @@ export const useInboxCount = () => {
 
   useEffect(() => {
     // 1. Reference the 'messages' collection
-    const collectionRef = collection(db, "messages"); 
+    const collectionRef = collection(db, "portfolio", "admin", "messages"); 
 
     // 2. Listen to real-time updates
     const unsubscribe = onSnapshot(collectionRef, (snapshot) => {
