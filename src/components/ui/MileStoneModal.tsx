@@ -69,7 +69,7 @@ const MileStoneModal = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
+   
     try {
       const isExperience = activeTab === "experience";
       const collectionName = isExperience ? "experiences" : "qualifications";
@@ -84,7 +84,7 @@ const MileStoneModal = ({
         payload.role = formData.role;
         payload.company = formData.company;
         payload.responsibilities = formData.description;
-        payload.skills = formData.skills
+        payload.skills = formData?.skills
           .split(",")
           .map((s: string) => s.trim())
           .filter((s: string) => s !== "");
@@ -99,7 +99,7 @@ const MileStoneModal = ({
 
       let response;
       if (milestoneToEdit) {
-        console.log("Updating", collectionName, mileStoneId, payload);
+      
 
         // Update Redux
         if (isExperience) {

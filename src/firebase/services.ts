@@ -246,15 +246,13 @@ export const updateExperience = async (
   experienceId: string
 ) => {
   try {
+    
     const docRef = doc(db, "portfolio", "admin", "experiences", experienceId);
     const response = await updateDoc(docRef, {
       ...formData,
       ending_date: Timestamp.fromDate(new Date(formData.ending_date)),
       starting_date: Timestamp.fromDate(new Date(formData.starting_date)),
       skills: formData.skills
-        .split(",")
-        .map((skill) => skill.trim())
-        .filter((skill) => skill !== ""),
     });
 
     return { success: true, message: "Experience updated successfully." };
